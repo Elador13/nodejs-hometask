@@ -6,21 +6,46 @@ const { responseMiddleware } = require('../middlewares/response.middleware');
 const router = Router();
 // TODO: Implement route controllers for user
 
-router.get('/', ((req, res) => {
-  console.log('here')
-  res.send('GET')
+//Get all users
+router.get('/', (req, res, next) => {
+  const users = UserService.getAll()
+  if (!users) {
+    res.status(404)
+    res.locals.error = {code: 404, message: 'Users are not exist'}
+    next()
+  } else {
+    res.status(200).json(users)
+    next()
+  }
+}, responseMiddleware)
+
+//Get one user
+router.get('/:id', ((req, res) => {
+  const user = UserService.search({id: req.params.id})
+  res.send(user)
 }))
 
-router.post('/', ((req, res) => {
+//Create user
+router.post('/', createUserValid, (req, res, next) => {
+  //TODO: Implement validation
+  if (res.locals.error) {
+    next()
+  } else {
+    const createdUser = UserService.create(req.body);
+    res.send(createdUser)
+    next()
+  }
+}, responseMiddleware)
 
-}))
-
+//Update user
 router.put('/:id', ((req, res) => {
 
 }))
 
+//Delete user
 router.delete('/:id', ((req, res) => {
-
+  const deletedUser = UserService.delete(req.params.id)
+  res.send(deletedUser)
 }))
 
 module.exports = router;

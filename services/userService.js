@@ -11,6 +11,25 @@ class UserService {
         }
         return item;
     }
+
+    getAll() {
+        const users = UserRepository.getAll()
+        if (!users.length) {
+            return null
+        }
+        return users;
+    }
+
+    create(userData) {
+        const createdUser = UserRepository.create(userData)
+        return createdUser
+    }
+
+    delete(userId) {
+        //TODO: check if user exist
+        const deletedId = UserRepository.delete(userId)
+        return deletedId
+    }
 }
 
 module.exports = new UserService();
