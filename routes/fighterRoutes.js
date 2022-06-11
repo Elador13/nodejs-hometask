@@ -2,7 +2,6 @@ const {Router} = require('express');
 const FighterService = require('../services/fighterService');
 const {responseMiddleware} = require('../middlewares/response.middleware');
 const {createFighterValid, updateFighterValid} = require('../middlewares/fighter.validation.middleware');
-const {fighter} = require("../models/fighter");
 
 const router = Router();
 
@@ -12,11 +11,10 @@ router.get('/', (req, res, next) => {
   if (!fighters) {
     res.status(404)
     res.locals.error = {code: 404, message: 'Fighters do not exist'}
-    next()
-  } else {
-    res.status(200).json(fighters)
-    next()
+    return next()
   }
+  res.status(200).json(fighters)
+  next()
 }, responseMiddleware)
 
 //Get one fighter
@@ -25,11 +23,10 @@ router.get('/:id', (req, res, next) => {
   if (!fighter) {
     res.status(404);
     res.locals.error = {code: 404, message: 'Fighter not found'};
-    next();
-  } else {
-    res.status(200).json(fighter)
-    next()
+    return next();
   }
+  res.status(200).json(fighter)
+  next()
 }, responseMiddleware)
 
 //Create fighter
@@ -37,8 +34,8 @@ router.post('/', createFighterValid, (req, res, next) => {
   if (res.locals.error) {
     return next()
   }
-  const nameExist = FighterService.search({name: req.body.name.toLowerCase()})
-  if (nameExist) {
+  const foundByName = FighterService.search({name: req.body.name.toLowerCase()})
+  if (foundByName) {
     res.status(404);
     res.locals.error = {code: 404, message: 'Fighter already exists'};
     return next();
@@ -60,14 +57,17 @@ router.put('/:id', updateFighterValid, (req, res, next) => {
     return next()
   }
   if (req.body.name) {
-    const existingName = FighterService.search({name: req.body.name.toLowerCase()})
-    if (existingName && (existingName.name.toLowerCase() === req.body.name.toLowerCase())) {
+    const foundByName = FighterService.search({name: req.body.name.toLowerCase()})
+    if (foundByName
+        && (foundByName.name.toLowerCase() === req.body.name.toLowerCase())
+        && (foundByName.id !== req.params.id))
+    {
       res.status(400);
       res.locals.error = {code: 400, message: 'This name already used by another fighter'};
       return next()
     }
   }
-  const updatedFighter = FighterService.update(req.params.id, req.body);
+  const updatedFighter = FighterService.update(req.params.id, {...req.body, name: req.body.name.toLowerCase()});
   res.status(200).json(updatedFighter)
   next()
 }, responseMiddleware)
@@ -78,11 +78,10 @@ router.delete('/:id', (req, res, next) => {
   if (!deletedFighter) {
     res.status(404);
     res.locals.error = {code: 404, message: 'Fighter to delete not found'};
-    next()
-  } else {
-    res.status(200).json(deletedFighter)
-    next()
+    return next()
   }
+  res.status(200).json(deletedFighter)
+  next()
 }, responseMiddleware)
 
 module.exports = router;
