@@ -34,44 +34,58 @@ router.get('/:id', (req, res, next) => {
 //Create user
 router.post('/', createUserValid, (req, res, next) => {
   if (res.locals.error) {
-    next()
+    return next()
   } else {
-    const emailExist = UserService.search({email: req.body.email})
+    const emailExist = UserService.search({email: req.body.email.toLowerCase()})
     const phoneExist = UserService.search({phoneNumber: req.body.phoneNumber})
     if (emailExist || phoneExist) {
       res.status(404);
       res.locals.error = {code: 404, message: 'User already exists'};
-      next();
-    } else {
-      const createdUser = UserService.create(req.body);
-      res.status(200).json(createdUser)
-      next()
+      return next();
     }
+    const createdUser = UserService.create({...req.body, email: req.body.email.toLowerCase()});
+    res.status(200).json(createdUser)
+    next()
   }
 }, responseMiddleware)
 
 //Update user
 router.put('/:id', updateUserValid, (req, res, next) => {
-  const idExist = UserService.search({id: req.params.id});
-  if (!idExist) {
-    res.status(404);
-    res.locals.error = {code: 404, message: 'User to update not found'};
+  if (res.locals.error) {
     next()
   } else {
-    if (req.body.email && UserService.search({email: req.body.email})) {
-      res.status(400);
-      res.locals.error = {code: 400, message: 'This email already used by another user'};
-      next()
-    } else if (req.body.phoneNumber && UserService.search({phoneNumber: req.body.phoneNumber})) {
-      res.status(400);
-      res.locals.error = {code: 400, message: 'This phone number already used by another user'};
-      next();
-    } else {
-      const updatedUser = UserService.update(req.params.id, req.body);
-      res.status(200).json(updatedUser)
+    const idExist = UserService.search({id: req.params.id});
+    if (!idExist) {
+      res.status(404);
+      res.locals.error = {code: 404, message: 'User to update not found'};
       next()
     }
+    if (req.body.email) {
+      const existingEmail = UserService.search({email: req.body.email})
+      if (existingEmail
+        && (existingEmail.email.toLowerCase() === req.body.email.toLowerCase())
+        && (existingEmail.id !== req.params.id)) {
+        res.status(400);
+        res.locals.error = {code: 400, message: 'This email already used by another user'};
+        next()
+      }
+    }
+    if (req.body.phoneNumber) {
+      const existingPhone = UserService.search({phoneNumber: req.body.phoneNumber})
+      if (existingPhone && existingPhone.phoneNumber !== req.body.phoneNumber) {
+        res.status(400);
+        res.locals.error = {code: 400, message: 'This phone number already used by another user'};
+        next();
+      }
+    }
+    const updatedUser = UserService.update(req.params.id, req.body);
+    res.status(200).json(updatedUser)
+    next()
+
+
   }
+
+
 }, responseMiddleware)
 
 //Delete user

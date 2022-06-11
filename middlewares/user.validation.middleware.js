@@ -1,39 +1,58 @@
 const { user } = require('../models/user');
 
-const fieldsValidation = (body, model, mode = 'create') => {
+const validationByModel = (body, model, mode = 'create') => {
     let errors = []
 
-    for (let validField in model) {
-        if (!body[validField]) {
+    for (let modelField in model) {
+        if (modelField === 'id') {
+            continue
+        }
+        //If required
+        if (!body[modelField] && mode === 'create' && model[modelField].required) {
+            errors.push(`${modelField} is required`);
+            continue;
+        }
+
+        // //if empty
+        // if (!body[modelField].length) {
+        //     errors.push(`${modelField} must not be empty!`)
+        //     continue
+        // }
+
+        // //If required
+        // if (mode === 'create' && model[modelField].required) {
+        //     if (!body[modelField]) {
+        //         errors.push(`${modelField} is required`)
+        //         continue
+        //     }
+        // }
+
+        //If regexp
+        if (model[modelField].regexp) {
+            let passed = model[modelField].regexp.test(body[modelField])
+            model[modelField].regexp.lastIndex = 0
+            if (!passed) errors.push(`${modelField} is invalid`)
             continue
         }
 
-        //If required
-        if (mode === 'create' && model[validField].required) {
-            if (!body[validField]) {
-                errors.push(`${validField} is required`)
-                continue
-            }
-        }
-        //If regexp
-        if (model[validField].regexp) {
-            let passed = model[validField].regexp.test(body[validField])
-            model[validField].regexp.lastIndex = 0
-            if (!passed) errors.push(`${validField} is invalid`)
+        //If Type doesn't match
+        if (body[modelField] && model[modelField].type && (typeof body[modelField] !== model[modelField].type)) {
+            errors.push(`${modelField} must be ${model[modelField].type}`)
             continue
         }
+
         //If min
-        if (model[validField].min) {
-            let passString = String(body[validField])
-            if (passString.length < model[validField].min) {
-                errors.push(`${validField} must be more than ${model[validField].min} symbols`)
+        if (model[modelField].min) {
+            let passString = String(body[modelField])
+            if (passString.length < model[modelField].min) {
+                errors.push(`${modelField} must be more than ${model[modelField].min} symbols`)
             }
         }
         //If max
-        if (model[validField].max) {
-            let passString = String(body[validField])
-            if (passString.length > model[validField].max) {
-                errors.push(`${validField} must be less than ${model[validField].max} symbols`)
+        if (model[modelField].max) {
+            let passString = String(body[modelField])
+            if (passString.length > model[modelField].max) {
+                errors.push(`${modelField} must be less than ${model[modelField].max} symbols`)
             }
         }
     }
@@ -45,7 +64,7 @@ const createUserValid = (req, res, next) => {
     // TODO: Implement validatior for user entity during creation
     let {firstName, lastName, email, phoneNumber, password, ...rest} = req.body
 
-    let errors = fieldsValidation(req.body, user)
+    let errors = validationByModel(req.body, user)
     if (errors.length) {
         res.status(400)
         res.locals.error = {code: 400, message: errors.join('; ')}
@@ -73,8 +92,7 @@ const updateUserValid = (req, res, next) => {
     //     next()
     // }
 
-    let {firstName, lastName, email, phoneNumber, password, ...rest} = req.body;
-
+    // let {firstName, lastName, email, phoneNumber, password, ...rest} = req.body;
     //At least one field should exist
     if (Object.keys(req.body).some((value) => Object.keys(user).includes(value))) {
         let {firstName, lastName, email, phoneNumber, password, ...rest} = req.body
@@ -86,7 +104,7 @@ const updateUserValid = (req, res, next) => {
             next()
         }
 
-        let errors = fieldsValidation(req.body, user, 'update');
+        let errors = validationByModel(req.body, user, 'update');
         if (errors.length) {
             res.status(400)
             res.locals.error = {code: 400, message: errors.join('; ')}
@@ -98,8 +116,8 @@ const updateUserValid = (req, res, next) => {
             next()
         }
     } else {
-        // res.status(400)
-        // res.locals.error = {code: 400, message: 'User entity to update isn\'t valid'}
+        res.status(400)
+        res.locals.error = {code: 400, message: 'User entity to update isn\'t valid'}
         next()
     }
     next()

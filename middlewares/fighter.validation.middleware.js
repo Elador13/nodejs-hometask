@@ -4,12 +4,19 @@ const validationByModel = (body, model, mode = 'create') => {
   let errors = []
 
   for (let modelField in model) {
+    if (modelField === 'id') {
+      continue
+    }
+    // //if empty
+    // if (!body[modelField].length) {
+    //   errors.push(`${modelField} must not be empty!`)
+    //   continue
+    // }
+
     //If required
-    if (mode === 'create' && model[modelField].required) {
-      if (!body[modelField]) {
-        errors.push(`${modelField} is required`)
-        continue
-      }
+    if (!body[modelField] && mode === 'create' && model[modelField].required) {
+      errors.push(`${modelField} is required`);
+      continue;
     }
 
     //If Type doesn't match
@@ -68,6 +75,35 @@ const createFighterValid = (req, res, next) => {
 
 const updateFighterValid = (req, res, next) => {
   // TODO: Implement validatior for fighter entity during update
+  //At least one field should exist
+  if (Object.keys(req.body).some((value) => Object.keys(fighter).includes(value))) {
+    let {firstName, lastName, email, phoneNumber, password, ...rest} = req.body
+
+    //If there are extra fields
+    if (Object.keys(req.body).some(field => !Object.keys(fighter).includes(field))) {
+      console.log('here')
+      res.status(400)
+      res.locals.error = {code: 400, message: `Invalid extra fields`}
+      next()
+    }
+
+    let errors = validationByModel(req.body, fighter, 'update');
+    console.log(errors)
+    if (errors.length) {
+      res.status(400)
+      res.locals.error = {code: 400, message: errors.join('; ')}
+      next()
+    }
+    if (rest.id) {
+      res.status(400)
+      res.locals.error = {code: 400, message: 'Cannot accept id field'}
+      next()
+    }
+  } else {
+    res.status(400)
+    res.locals.error = {code: 400, message: 'Fighter entity to update isn\'t valid'}
+    next()
+  }
   next();
 }
 

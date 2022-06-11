@@ -1,8 +1,8 @@
 exports.user = {
     id: '',
-    firstName: {required: true},
-    lastName: {required: true},
-    email: {required: true, regexp: /(\W|^)[\w.+\-]*@gmail\.com(\W|$)/ig},
-    phoneNumber: {required: true, regexp: /^(?:\+38)?(0\d{9})$/},
-    password: {required: true, min: 3} // min 3 symbols
+    firstName: {type: 'string', required: true},
+    lastName: {type: 'string', required: true},
+    email: {type: 'string', required: true, regexp: /(\W|^)[\w.+\-]*@gmail\.com(\W|$)/ig},
+    phoneNumber: {type: 'string', required: true, regexp: /^(?:\+38)?(0\d{9})$/},
+    password: {type: 'string', required: true, min: 3} // min 3 symbols
 }
