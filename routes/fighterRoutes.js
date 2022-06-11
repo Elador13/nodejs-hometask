@@ -50,8 +50,8 @@ router.put('/:id', updateFighterValid, (req, res, next) => {
   if (res.locals.error) {
     return next()
   }
-  const idExist = FighterService.search({id: req.params.id});
-  if (!idExist) {
+  const foundById = FighterService.search({id: req.params.id});
+  if (!foundById) {
     res.status(404);
     res.locals.error = {code: 404, message: 'Fighter to update not found'};
     return next()
@@ -59,7 +59,7 @@ router.put('/:id', updateFighterValid, (req, res, next) => {
   if (req.body.name) {
     const foundByName = FighterService.search({name: req.body.name.toLowerCase()})
     if (foundByName
-        && (foundByName.name.toLowerCase() === req.body.name.toLowerCase())
+        // && (foundByName.name.toLowerCase() === req.body.name.toLowerCase())
         && (foundByName.id !== req.params.id))
     {
       res.status(400);

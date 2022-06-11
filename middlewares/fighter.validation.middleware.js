@@ -14,6 +14,14 @@ const validationByModel = (body, model, mode = 'create') => {
       continue;
     }
 
+    // Not empty
+    if (mode === 'update') {
+      if (body[modelField] === "") {
+        errors.push(`${modelField} cannot be empty!`);
+      }
+      continue;
+    }
+
     //If Type doesn't match
     if (body[modelField] && model[modelField].type && (typeof body[modelField] !== model[modelField].type)) {
       errors.push(`${modelField} must be ${model[modelField].type}`)

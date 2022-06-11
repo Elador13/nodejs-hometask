@@ -11,11 +11,10 @@ router.get('/', (req, res, next) => {
   if (!users) {
     res.status(404)
     res.locals.error = {code: 404, message: 'Users are not exist'}
-    next()
-  } else {
-    res.status(200).json(users)
-    next()
+    return next()
   }
+  res.status(200).json(users)
+  next()
 }, responseMiddleware)
 
 //Get one user
@@ -24,68 +23,61 @@ router.get('/:id', (req, res, next) => {
   if (!user) {
     res.status(404);
     res.locals.error = {code: 404, message: 'User not found'};
-    next();
-  } else {
-    res.status(200).json(user)
-    next()
+    return next();
   }
+  res.status(200).json(user)
+  next()
 }, responseMiddleware)
 
 //Create user
 router.post('/', createUserValid, (req, res, next) => {
   if (res.locals.error) {
     return next()
-  } else {
-    const emailExist = UserService.search({email: req.body.email.toLowerCase()})
-    const phoneExist = UserService.search({phoneNumber: req.body.phoneNumber})
-    if (emailExist || phoneExist) {
-      res.status(404);
-      res.locals.error = {code: 404, message: 'User already exists'};
-      return next();
-    }
-    const createdUser = UserService.create({...req.body, email: req.body.email.toLowerCase()});
-    res.status(200).json(createdUser)
-    next()
   }
+  const foundByEmail = UserService.search({email: req.body.email.toLowerCase()})
+  const foundByPhone = UserService.search({phoneNumber: req.body.phoneNumber})
+  if (foundByEmail || foundByPhone) {
+    res.status(404);
+    res.locals.error = {code: 404, message: 'User already exists'};
+    return next();
+  }
+  const createdUser = UserService.create({...req.body, email: req.body.email.toLowerCase()});
+  res.status(200).json(createdUser)
+  next()
 }, responseMiddleware)
 
 //Update user
 router.put('/:id', updateUserValid, (req, res, next) => {
   if (res.locals.error) {
-    next()
-  } else {
-    const idExist = UserService.search({id: req.params.id});
-    if (!idExist) {
-      res.status(404);
-      res.locals.error = {code: 404, message: 'User to update not found'};
-      next()
-    }
-    if (req.body.email) {
-      const existingEmail = UserService.search({email: req.body.email})
-      if (existingEmail
-        && (existingEmail.email.toLowerCase() === req.body.email.toLowerCase())
-        && (existingEmail.id !== req.params.id)) {
-        res.status(400);
-        res.locals.error = {code: 400, message: 'This email already used by another user'};
-        next()
-      }
-    }
-    if (req.body.phoneNumber) {
-      const existingPhone = UserService.search({phoneNumber: req.body.phoneNumber})
-      if (existingPhone && existingPhone.phoneNumber !== req.body.phoneNumber) {
-        res.status(400);
-        res.locals.error = {code: 400, message: 'This phone number already used by another user'};
-        next();
-      }
-    }
-    const updatedUser = UserService.update(req.params.id, req.body);
-    res.status(200).json(updatedUser)
-    next()
-
-
+    return next()
   }
-
-
+  const foundById = UserService.search({id: req.params.id});
+  if (!foundById) {
+    res.status(404);
+    res.locals.error = {code: 404, message: 'User to update not found'};
+    return next()
+  }
+  if (req.body.email) {
+    const foundByEmail = UserService.search({email: req.body.email.toLowerCase()})
+    if (foundByEmail
+      // && (foundByEmail.email.toLowerCase() === req.body.email.toLowerCase())
+      && (foundByEmail.id !== req.params.id)) {
+      res.status(400);
+      res.locals.error = {code: 400, message: 'This email already used by another user'};
+      return next()
+    }
+  }
+  if (req.body.phoneNumber) {
+    const foundByPhone = UserService.search({phoneNumber: req.body.phoneNumber})
+    if (foundByPhone && (foundByPhone.id !== req.params.id)) {
+      res.status(400);
+      res.locals.error = {code: 400, message: 'This phone number already used by another user'};
+      return next();
+    }
+  }
+  const updatedUser = UserService.update(req.params.id, {...req.body, email: req.body.email.toLowerCase()});
+  res.status(200).json(updatedUser)
+  next()
 }, responseMiddleware)
 
 //Delete user
@@ -94,11 +86,10 @@ router.delete('/:id', (req, res, next) => {
   if (!deletedUser) {
     res.status(404);
     res.locals.error = {code: 404, message: 'User to delete not found'};
-    next()
-  } else {
-    res.status(200).json(deletedUser)
-    next()
+    return next()
   }
+  res.status(200).json(deletedUser)
+  next()
 }, responseMiddleware)
 
 module.exports = router;
