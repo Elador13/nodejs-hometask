@@ -1,5 +1,5 @@
 exports.user = {
-    id: {absent: true},
+    id: '',
     firstName: {required: true},
     lastName: {required: true},
     email: {required: true, regexp: /(\W|^)[\w.+\-]*@gmail\.com(\W|$)/ig},

@@ -25,10 +25,17 @@ class UserService {
         return createdUser
     }
 
+    update(userId, data) {
+        const updatedUser = UserRepository.update(userId, data)
+        return updatedUser
+    }
+
     delete(userId) {
-        //TODO: check if user exist
         const deletedId = UserRepository.delete(userId)
-        return deletedId
+        if (!deletedId.length) {
+            return null
+        }
+        return deletedId;
     }
 }
 
