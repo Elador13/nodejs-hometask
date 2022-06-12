@@ -18,7 +18,8 @@ export const deleteReq = async (entityName, id) => {
 
 const makeRequest = async (path, method, body) => {
     try {
-        const url = `${apiUrl}/${path}`
+        //TODO: Changed localhost port
+        const url = `http://localhost:3050${apiUrl}/${path}`
         const res = await fetch(url, {
             method,
             body: body ? JSON.stringify(body) : undefined ,

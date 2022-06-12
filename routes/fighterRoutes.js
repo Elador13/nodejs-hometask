@@ -34,13 +34,13 @@ router.post('/', createFighterValid, (req, res, next) => {
   if (res.locals.error) {
     return next()
   }
-  const foundByName = FighterService.search({name: req.body.name.toLowerCase()})
+  const foundByName = FighterService.search({name: req.body.name})
   if (foundByName) {
-    res.status(404);
-    res.locals.error = {code: 404, message: 'Fighter already exists'};
+    res.status(400);
+    res.locals.error = {code: 400, message: 'Fighter already exists'};
     return next();
   }
-  const createdFighter = FighterService.create({...req.body, name: req.body.name.toLowerCase()});
+  const createdFighter = FighterService.create(req.body);
   res.status(200).json(createdFighter)
   next()
 }, responseMiddleware)
@@ -57,7 +57,7 @@ router.put('/:id', updateFighterValid, (req, res, next) => {
     return next()
   }
   if (req.body.name) {
-    const foundByName = FighterService.search({name: req.body.name.toLowerCase()})
+    const foundByName = FighterService.search({name: req.body.name})
     if (foundByName
         // && (foundByName.name.toLowerCase() === req.body.name.toLowerCase())
         && (foundByName.id !== req.params.id))
@@ -67,7 +67,7 @@ router.put('/:id', updateFighterValid, (req, res, next) => {
       return next()
     }
   }
-  const updatedFighter = FighterService.update(req.params.id, {...req.body, name: req.body.name.toLowerCase()});
+  const updatedFighter = FighterService.update(req.params.id, req.body);
   res.status(200).json(updatedFighter)
   next()
 }, responseMiddleware)

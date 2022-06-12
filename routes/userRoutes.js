@@ -37,8 +37,8 @@ router.post('/', createUserValid, (req, res, next) => {
   const foundByEmail = UserService.search({email: req.body.email.toLowerCase()})
   const foundByPhone = UserService.search({phoneNumber: req.body.phoneNumber})
   if (foundByEmail || foundByPhone) {
-    res.status(404);
-    res.locals.error = {code: 404, message: 'User already exists'};
+    res.status(400);
+    res.locals.error = {code: 400, message: 'User already exists'};
     return next();
   }
   const createdUser = UserService.create({...req.body, email: req.body.email.toLowerCase()});
@@ -75,7 +75,7 @@ router.put('/:id', updateUserValid, (req, res, next) => {
       return next();
     }
   }
-  const updatedUser = UserService.update(req.params.id, {...req.body, email: req.body.email.toLowerCase()});
+  const updatedUser = UserService.update(req.params.id, {...req.body});
   res.status(200).json(updatedUser)
   next()
 }, responseMiddleware)
