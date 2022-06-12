@@ -60,7 +60,6 @@ router.put('/:id', updateUserValid, (req, res, next) => {
   if (req.body.email) {
     const foundByEmail = UserService.search({email: req.body.email.toLowerCase()})
     if (foundByEmail
-      // && (foundByEmail.email.toLowerCase() === req.body.email.toLowerCase())
       && (foundByEmail.id !== req.params.id)) {
       res.status(400);
       res.locals.error = {code: 400, message: 'This email already used by another user'};

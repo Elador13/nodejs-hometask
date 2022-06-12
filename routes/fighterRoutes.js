@@ -59,7 +59,6 @@ router.put('/:id', updateFighterValid, (req, res, next) => {
   if (req.body.name) {
     const foundByName = FighterService.search({name: req.body.name})
     if (foundByName
-        // && (foundByName.name.toLowerCase() === req.body.name.toLowerCase())
         && (foundByName.id !== req.params.id))
     {
       res.status(400);
