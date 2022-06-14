@@ -1,7 +1,14 @@
 const responseMiddleware = (req, res, next) => {
-   // TODO: Implement middleware that returns result of the query
     if (res.err) {
-        console.log(res.err)
+        if (res.locals.error) {
+            res.status(res.locals.error.code);
+            res.json({error: true, message: res.locals.error.message});
+            return next()
+        } else {
+            res.status(res.statusCode !== 200 ? res.statusCode : 400)
+            res.json({error: true, message: res.err.message});
+            return next();
+        }
     }
 
     if ((res.statusCode === 404 || res.statusCode === 400) && res.locals.error) {

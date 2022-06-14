@@ -6,13 +6,14 @@ const router = Router();
 
 router.post('/login', (req, res, next) => {
     try {
-        // TODO: Implement login action (get the user if it exist with entered credentials)
         const data = AuthService.login(req.body)
-        // res.data = data;
         res.status(200).json(data)
         next()
     } catch (err) {
         res.err = err;
+        res.status(400);
+        res.locals.error = {code: 400, message: 'Incorrect email or password'};
+        return next()
     } finally {
         res.status(200)
         next();
